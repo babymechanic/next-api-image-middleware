@@ -2,19 +2,21 @@ import { ApiRouteHandler, PerRequestContext } from 'next-middle-api';
 import { NextApiRequest, NextApiResponse } from 'next';
 import busboy, { FileInfo } from 'busboy';
 import { Readable } from 'stream';
-import sharp from 'sharp';
-import { UploadedFile, Opts, MultiPartParserResults, UPLOADED_FILES_RESULT_KEY } from './multi-part-definitions';
-import { createFileFromStream, createOutputBuffer } from './file-stream-utils';
+import { MultiPartParserResults, Opts, UPLOADED_FILES_RESULT_KEY, UploadedFile } from './multi-part-definitions';
+import { createFileFromStream, createSharpStream } from './file-stream-utils';
 import { IncomingHttpHeaders } from 'http';
 
 
-function processFiles(headers: IncomingHttpHeaders, limits: busboy.Limits, opts: Opts, req: NextApiRequest) {
+function processFiles(headers: IncomingHttpHeaders, opts: Opts, req: NextApiRequest) {
+  const {limits} = opts;
+
   return new Promise<MultiPartParserResults>((resolve, reject) => {
+
     const bb = busboy({headers: headers, limits: limits});
     const allFilePromises: Promise<UploadedFile>[] = [];
     let busboyError: unknown;
-
     let validationError: string | undefined;
+
     const setValidationError = (error: string) => {
       if (validationError != null) return;
       validationError = error;
@@ -29,11 +31,17 @@ function processFiles(headers: IncomingHttpHeaders, limits: busboy.Limits, opts:
 
 
     bb.on('file', (fieldName: string, stream: Readable, info: FileInfo) => {
-      const sharpStream = sharp();
-      const outputBuffer = createOutputBuffer(info, sharpStream, opts);
-      const filePromise = createFileFromStream(stream, outputBuffer, info, fieldName);
-      allFilePromises.push(filePromise);
-      stream.pipe(sharpStream);
+      if (validationError != null) return stream.resume();
+      const sharpStream = createSharpStream(info, opts);
+      if (sharpStream == null) {
+        stream.resume();
+        allFilePromises.push(Promise.resolve({fieldName, invalidMime: true, ...info}));
+      } else {
+        const outputBuffer = sharpStream.toBuffer();
+        const filePromise = createFileFromStream(stream, outputBuffer, info, fieldName);
+        allFilePromises.push(filePromise);
+        stream.pipe(sharpStream);
+      }
     });
 
 
@@ -54,8 +62,7 @@ function processFiles(headers: IncomingHttpHeaders, limits: busboy.Limits, opts:
 export const createMultiPartMiddleWare = (opts: Opts): ApiRouteHandler => {
   return async (req: NextApiRequest, res: NextApiResponse, context: PerRequestContext): Promise<void> => {
     const headers = req.headers;
-    const limits = opts.limits;
-    const parserResults = await processFiles(headers, limits, opts, req);
+    const parserResults = await processFiles(headers, opts, req);
     context.addItem(UPLOADED_FILES_RESULT_KEY, parserResults);
   };
 };
