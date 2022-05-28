@@ -37,8 +37,7 @@ function processFiles(headers: IncomingHttpHeaders, opts: Opts, req: NextApiRequ
         stream.resume();
         allFilePromises.push(Promise.resolve({fieldName, invalidMime: true, ...info}));
       } else {
-        const outputBuffer = sharpStream.toBuffer();
-        const filePromise = createFileFromStream(stream, outputBuffer, info, fieldName);
+        const filePromise = createFileFromStream(stream, sharpStream.toBuffer(), info, fieldName);
         allFilePromises.push(filePromise);
         stream.pipe(sharpStream);
       }
@@ -49,9 +48,7 @@ function processFiles(headers: IncomingHttpHeaders, opts: Opts, req: NextApiRequ
       if (busboyError != null) return reject(busboyError);
       if (validationError != null) return resolve({validationError});
       Promise.all(allFilePromises)
-             .then((files) => {
-               resolve({files: files});
-             })
+             .then((files) => resolve({files: files}))
              .catch((error) => reject(error))
     });
     req.pipe(bb);

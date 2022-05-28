@@ -2,7 +2,26 @@
   "name": "next-middle-api-multi-part-file-parser",
   "version": "0.0.1",
   "description": "middleware to help with multi part file uploads",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "homepage": "https://github.com/babymechanic/next-middle-api-multi-part-file-parser#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/babymechanic/next-middle-api-multi-part-file-parser.git"
+  },
+  "keywords": [
+    "nextjs",
+    "next",
+    "typescript",
+    "middleware",
+    "image",
+    "file",
+    "multi-part"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha --require ts-node/register --recursive test/**/*.spec.ts "
+  },
   "license": "MIT",
   "dependencies": {
     "busboy": "^1.6.0",
