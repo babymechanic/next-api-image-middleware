@@ -3,16 +3,23 @@ import { FileInfo, Limits } from 'busboy';
 
 export const UPLOADED_FILES_RESULT_KEY = 'UPLOADED_FILES_RESULT_KEY';
 
+type FileStatus = 'Limit exceeded' | 'Invalid mime';
+
 export interface UploadedFile extends FileInfo {
-  fileContent?: Buffer;
+  fileContent: Buffer;
   fieldName: string;
-  limitExceeded?: boolean;
-  invalidMime?: boolean;
+  status: 'Success';
 }
+
+export interface UploadedFileError extends FileInfo {
+  fieldName: string;
+  status: FileStatus;
+}
+
 
 export type SharpToBufferMapping = {
   [key: string]: {
-    sharpStream: () => sharp.Sharp
+    applyManipulations: (seed: sharp.Sharp) => sharp.Sharp
   }
 }
 
@@ -21,9 +28,15 @@ export interface Opts {
   limits: Limits;
 }
 
-export type MultiPartParserResults = {
-  validationError?: string;
-  files?: UploadedFile[];
+export type ErrorParseResult = {
+  validationError: string;
 }
+
+export type FileParsedResult = {
+  validationError: null;
+  files: (UploadedFileError | UploadedFile)[];
+}
+
+export type MultiPartParserResults = ErrorParseResult | FileParsedResult;
 
 

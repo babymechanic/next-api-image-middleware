@@ -1,5 +1,5 @@
 {
-  "name": "next-middle-api-multi-part-file-parser",
+  "name": "next-api-image-middleware",
   "version": "0.0.1",
   "description": "middleware to help with multi part file uploads",
   "main": "dist/index.js",
@@ -16,7 +16,10 @@
     "middleware",
     "image",
     "file",
-    "multi-part"
+    "multi-part",
+    "busboy",
+    "sharp",
+    "stream"
   ],
   "scripts": {
     "build": "tsc",

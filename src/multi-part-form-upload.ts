@@ -2,9 +2,10 @@ import { ApiRouteHandler, PerRequestContext } from 'next-middle-api';
 import { NextApiRequest, NextApiResponse } from 'next';
 import busboy, { FileInfo } from 'busboy';
 import { Readable } from 'stream';
-import { MultiPartParserResults, Opts, UPLOADED_FILES_RESULT_KEY, UploadedFile } from './multi-part-definitions';
-import { createFileFromStream, createSharpStream } from './file-stream-utils';
+import { MultiPartParserResults, Opts, UPLOADED_FILES_RESULT_KEY, UploadedFile, UploadedFileError } from './multi-part-definitions';
+import { createFileFromStream, createSharpBuffer } from './file-stream-utils';
 import { IncomingHttpHeaders } from 'http';
+import sharp from 'sharp';
 
 
 function processFiles(headers: IncomingHttpHeaders, opts: Opts, req: NextApiRequest) {
@@ -13,7 +14,7 @@ function processFiles(headers: IncomingHttpHeaders, opts: Opts, req: NextApiRequ
   return new Promise<MultiPartParserResults>((resolve, reject) => {
 
     const bb = busboy({headers: headers, limits: limits});
-    const allFilePromises: Promise<UploadedFile>[] = [];
+    const allFilePromises: Promise<UploadedFile | UploadedFileError>[] = [];
     let busboyError: unknown;
     let validationError: string | undefined;
 
@@ -32,12 +33,14 @@ function processFiles(headers: IncomingHttpHeaders, opts: Opts, req: NextApiRequ
 
     bb.on('file', (fieldName: string, stream: Readable, info: FileInfo) => {
       if (validationError != null) return stream.resume();
-      const sharpStream = createSharpStream(info, opts);
-      if (sharpStream == null) {
+      const sharpStream = sharp();
+      const sharpBuffer = createSharpBuffer(info, sharpStream, opts);
+      if (sharpBuffer == null) {
         stream.resume();
-        allFilePromises.push(Promise.resolve({fieldName, invalidMime: true, ...info}));
+        const value: UploadedFileError = {fieldName, status: 'Invalid mime', ...info};
+        allFilePromises.push(Promise.resolve(value));
       } else {
-        const filePromise = createFileFromStream(stream, sharpStream.toBuffer(), info, fieldName);
+        const filePromise = createFileFromStream(stream, sharpBuffer, info, fieldName);
         allFilePromises.push(filePromise);
         stream.pipe(sharpStream);
       }
@@ -48,8 +51,13 @@ function processFiles(headers: IncomingHttpHeaders, opts: Opts, req: NextApiRequ
       if (busboyError != null) return reject(busboyError);
       if (validationError != null) return resolve({validationError});
       Promise.all(allFilePromises)
-             .then((files) => resolve({files: files}))
-             .catch((error) => reject(error))
+             .then((files) => resolve({
+               files: files,
+               validationError: null
+             }))
+             .catch((e) => {
+               reject(e);
+             });
     });
     req.pipe(bb);
   });
