@@ -26,6 +26,7 @@ export type SharpToBufferMapping = {
 export interface Opts {
   mimeTypes: SharpToBufferMapping;
   limits: Limits;
+  contextKey?: string;
 }
 
 export type ErrorParseResult = {

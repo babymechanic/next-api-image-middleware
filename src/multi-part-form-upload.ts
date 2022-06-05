@@ -60,10 +60,11 @@ function processFiles(headers: IncomingHttpHeaders, opts: Opts, req: NextApiRequ
 
 
 export const createMultiPartMiddleWare = (opts: Opts): ApiRouteMiddleware => {
+  const {contextKey = UPLOADED_FILES_RESULT_KEY} = opts;
   return async (req: NextApiRequest, res: NextApiResponse, context: PerRequestContext, next): Promise<void> => {
     const headers = req.headers;
     const parserResults = await processFiles(headers, opts, req);
-    context.addItem(UPLOADED_FILES_RESULT_KEY, parserResults);
+    context.addItem(contextKey, parserResults);
     await next();
   };
 };
