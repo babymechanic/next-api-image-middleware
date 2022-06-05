@@ -42,8 +42,8 @@ export function createFileFromStream(stream: Readable, outputBuffer: Promise<Buf
 }
 
 
-export function createSharpBuffer(info: busboy.FileInfo, sharpStream: sharp.Sharp, opts: Opts): Promise<Buffer> | undefined {
+export function createSharp(info: busboy.FileInfo, opts: Opts): sharp.Sharp | undefined {
   const mimeType = opts.mimeTypes[info.mimeType];
-  return mimeType?.applyManipulations(sharpStream)?.toBuffer();
+  return mimeType?.sharp();
 }
 

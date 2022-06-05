@@ -19,7 +19,7 @@ export interface UploadedFileError extends FileInfo {
 
 export type SharpToBufferMapping = {
   [key: string]: {
-    applyManipulations: (seed: sharp.Sharp) => sharp.Sharp
+    sharp: () => sharp.Sharp
   }
 }
 
