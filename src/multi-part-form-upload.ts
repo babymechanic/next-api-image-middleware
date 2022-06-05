@@ -1,4 +1,4 @@
-import { ApiRouteHandler, ApiRouteMiddleware, PerRequestContext } from 'next-middle-api';
+import { ApiRouteMiddleware, PerRequestContext } from 'next-middle-api';
 import { NextApiRequest, NextApiResponse } from 'next';
 import busboy, { FileInfo } from 'busboy';
 import { Readable } from 'stream';
