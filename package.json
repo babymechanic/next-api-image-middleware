@@ -16,7 +16,7 @@
     "middleware",
     "image",
     "file",
-    "multi-part",
+    "multipart",
     "busboy",
     "sharp",
     "stream"
