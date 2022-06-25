@@ -41,10 +41,11 @@ export const config = {
 
 
 // define your custom image middleware
+const customKey = 'MY_CUSTOM_KEY';
 const imageMiddleWare = createMultiPartMiddleWare({
   // define busy boy specific limits
   limits: {
-    fileSize: 1024 * 1024 * 5, 
+    fileSize: 1024 * 1024 * 5,
     files: 1
   },
   mimeTypes: {
@@ -53,13 +54,15 @@ const imageMiddleWare = createMultiPartMiddleWare({
     'image/png': {sharp: () => sharp().png({quality: 80})},
     'image/gif': {sharp: () => sharp().gif()},
     'image/webp': {sharp: () => sharp().webp({quality: 80})}
-  }
+  },
+  contextKey: customKey // default is the `UPLOADED_FILES_RESULT_KEY` constant
 });
+
 
 export default createHandlers({
   post: {
     handler: async (req, res, context) => {
-      const results = context.getItem(UPLOADED_FILES_RESULT_KEY) as MultiPartParserResults;
+      const results = context.getItem(customKey) as MultiPartParserResults;
 
       //check if there were any validation errors
       //if this error is present you should ignore files as busboy does not process any further in this case
@@ -78,6 +81,7 @@ export default createHandlers({
     preHooks: [imageMiddleWare]
   }
 });
+
 ```
 
 
