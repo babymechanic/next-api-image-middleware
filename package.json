@@ -28,7 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "busboy": "^1.6.0",
-    "next-middle-api": "^0.0.5",
+    "next-middle-api": "^0.0.6",
     "sharp": "^0.30.5"
   },
   "devDependencies": {
