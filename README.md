@@ -1,10 +1,9 @@
 # next-api-image-middleware
 
-NextJs middleware plugin for [next-middle-api](https://www.npmjs.com/package/next-middle-api) as a middle ware.
-Which combines [busboy](https://www.npmjs.com/package/busboy) and [sharp](https://www.npmjs.com/package/sharp) to handle image uploads.
+A NextJs middleware for fast image processing in memory. 
 
-This is for high speed in memory processing of images. 
-
+NextJs middleware plugin for [next-middle-api](https://www.npmjs.com/package/next-middle-api) as a middleware.
+It combines [busboy](https://www.npmjs.com/package/busboy) and [sharp](https://www.npmjs.com/package/sharp) to handle image uploads.
 
 ## Main features
 
